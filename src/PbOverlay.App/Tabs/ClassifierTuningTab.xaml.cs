@@ -14,8 +14,9 @@ public partial class ClassifierTuningTab : UserControl
 {
     private WriteableBitmap? _bitmap;
 
-    // TODO: swap to SaturationStateClassifier once fully wired in Core.
-    private readonly ClassifierPipeline _pipeline = new(new PlaceholderClassifier());
+    private SaturationStateClassifier? _classifier;
+    private ClassifierPipeline? _pipeline;
+    private int _pipelineSlotCount = -1;
     private int _busy;
 
     public ClassifierTuningTab()
@@ -45,20 +46,44 @@ public partial class ClassifierTuningTab : UserControl
 
     private void SatSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-        AppServices.Config.Classifier.AliveDeadSaturationThreshold = (int)e.NewValue;
+        AppServices.Config.Classifier.AliveDeadSaturationThreshold = e.NewValue;
         SatValueText.Text = ((int)e.NewValue).ToString();
+        InvalidatePipeline();
     }
 
     private void VarSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-        AppServices.Config.Classifier.EmptyVarianceThreshold = (int)e.NewValue;
+        AppServices.Config.Classifier.EmptyVarianceThreshold = e.NewValue;
         VarValueText.Text = ((int)e.NewValue).ToString();
+        InvalidatePipeline();
     }
 
     private void SmoothSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         AppServices.Config.Classifier.TemporalSmoothingFrames = (int)e.NewValue;
         SmoothValueText.Text = ((int)e.NewValue).ToString();
+        InvalidatePipeline();
+    }
+
+    private void InvalidatePipeline()
+    {
+        _pipeline = null;
+        _classifier = null;
+        _pipelineSlotCount = -1;
+    }
+
+    private void EnsurePipeline(int slotsPerTeam)
+    {
+        if (_pipeline is not null && _pipelineSlotCount == slotsPerTeam) return;
+        var c = AppServices.Config.Classifier;
+        _classifier = new SaturationStateClassifier(
+            new LowVarianceEmptyDetector(c.EmptyVarianceThreshold),
+            c.AliveDeadSaturationThreshold);
+        int frames = Math.Max(1, c.TemporalSmoothingFrames);
+        var sA = new TemporalSmoother(slotsPerTeam, frames);
+        var sB = new TemporalSmoother(slotsPerTeam, frames);
+        _pipeline = new ClassifierPipeline(_classifier, sA, sB);
+        _pipelineSlotCount = slotsPerTeam;
     }
 
     private void OnFrame(CapturedFrame frame)
@@ -79,14 +104,14 @@ public partial class ClassifierTuningTab : UserControl
                 if (profile is not null && profile.IsCalibrated)
                 {
                     var (aRects, bRects) = RoiMapper.SliceProfile(profile, w, h);
-                    var aStates = _pipeline.Classify(clone, aRects);
-                    var bStates = _pipeline.Classify(clone, bRects);
-                    for (int i = 0; i < aStates.Count; i++)
+                    EnsurePipeline(profile.SlotsPerTeam);
+                    var (aStates, bStates, aCount, bCount) = _pipeline!.Process(clone, aRects, bRects);
+                    for (int i = 0; i < aStates.Count && i < aRects.Count; i++)
                         DrawSlot(clone, aRects[i], aStates[i]);
-                    for (int i = 0; i < bStates.Count; i++)
+                    for (int i = 0; i < bStates.Count && i < bRects.Count; i++)
                         DrawSlot(clone, bRects[i], bStates[i]);
-                    aAlive = aStates.Count(s => s == SlotState.Alive);
-                    bAlive = bStates.Count(s => s == SlotState.Alive);
+                    aAlive = aCount;
+                    bAlive = bCount;
                 }
 
                 Dispatcher.BeginInvoke(new Action(() =>
@@ -140,9 +165,10 @@ public partial class ClassifierTuningTab : UserControl
 
     private void AutoCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        var samples = _pipeline.LastObservations;
-        if (samples is null || samples.Count == 0) return;
-        var threshold = SaturationStateClassifier.AutoCalibrateThreshold(samples);
+        if (_classifier is null) return;
+        var obs = _classifier.LastObservations;
+        if (obs.Count == 0) return;
+        var threshold = SaturationStateClassifier.AutoCalibrateThreshold(obs.Select(o => o.MeanSaturation));
         AppServices.Config.Classifier.AliveDeadSaturationThreshold = threshold;
         SatSlider.Value = threshold;
     }
