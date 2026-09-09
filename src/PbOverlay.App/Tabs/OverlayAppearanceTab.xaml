@@ -1,0 +1,60 @@
+<UserControl x:Class="PbOverlay.App.Tabs.OverlayAppearanceTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Margin="12">
+        <Grid Margin="0,0,0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="200"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Position X" VerticalAlignment="Center"/>
+            <TextBox x:Name="PositionXBox" Grid.Column="1"/>
+        </Grid>
+        <Grid Margin="0,0,0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="200"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Position Y" VerticalAlignment="Center"/>
+            <TextBox x:Name="PositionYBox" Grid.Column="1"/>
+        </Grid>
+
+        <TextBlock Text="Font size" Margin="0,6,0,0"/>
+        <Slider x:Name="FontSizeSlider" Minimum="8" Maximum="72" Width="300" HorizontalAlignment="Left"/>
+
+        <Grid Margin="0,6,0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="200"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Text color (ARGB hex)" VerticalAlignment="Center"/>
+            <TextBox x:Name="TextColorBox" Grid.Column="1"/>
+        </Grid>
+        <Grid Margin="0,0,0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="200"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Outline color (ARGB hex)" VerticalAlignment="Center"/>
+            <TextBox x:Name="OutlineColorBox" Grid.Column="1"/>
+        </Grid>
+
+        <TextBlock Text="Outline thickness" Margin="0,6,0,0"/>
+        <Slider x:Name="OutlineThicknessSlider" Minimum="0" Maximum="10" Width="300" HorizontalAlignment="Left"/>
+
+        <CheckBox x:Name="LockedCheck" Content="Locked" Margin="0,12,0,0"/>
+
+        <Grid Margin="0,6,0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="200"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Toggle hotkey" VerticalAlignment="Center"/>
+            <TextBox x:Name="HotkeyBox" Grid.Column="1" IsReadOnly="True"/>
+        </Grid>
+
+        <Button x:Name="SaveApplyButton" Content="Save &amp; Apply" Padding="10,4" Width="140"
+                HorizontalAlignment="Left" Margin="0,12,0,0" Click="SaveApplyButton_Click"/>
+        <TextBlock x:Name="ValidationText" Foreground="Red" Margin="0,6,0,0"/>
+    </StackPanel>
+</UserControl>

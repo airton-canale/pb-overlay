@@ -3,7 +3,7 @@ using OpenCvSharp;
 
 namespace PbOverlay.Core.Classify;
 
-public sealed class SaturationStateClassifier : IStateClassifier, IStateClassifierBatch
+public sealed class SaturationStateClassifier : IStateClassifierBatch
 {
     private readonly IEmptySlotDetector _emptyDetector;
     private readonly double _threshold;
@@ -22,12 +22,6 @@ public sealed class SaturationStateClassifier : IStateClassifier, IStateClassifi
 
     public IReadOnlyList<SlotObservation> LastObservations => _last;
 
-    public SlotState Classify(SlotObservation obs, double aliveDeadThreshold)
-    {
-        if (_emptyDetector.IsEmpty(obs)) return SlotState.Empty;
-        return obs.MeanSaturation >= aliveDeadThreshold ? SlotState.Alive : SlotState.Dead;
-    }
-
     public IReadOnlyList<SlotState> ClassifyAll(Mat frameBgra, IReadOnlyList<Rect> slots)
     {
         _last.Clear();
@@ -36,7 +30,9 @@ public sealed class SaturationStateClassifier : IStateClassifier, IStateClassifi
         {
             var obs = Observe(frameBgra, slots[i]);
             _last.Add(obs);
-            states[i] = Classify(obs, _threshold);
+            states[i] = _emptyDetector.IsEmpty(obs)
+                ? SlotState.Empty
+                : obs.MeanSaturation >= _threshold ? SlotState.Alive : SlotState.Dead;
         }
         return states;
     }

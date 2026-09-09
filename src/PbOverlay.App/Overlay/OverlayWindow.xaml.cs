@@ -78,9 +78,10 @@ public partial class OverlayWindow : Window
         CountText.FontSize = _cfg.FontSize;
         FpsText.FontSize = Math.Max(8.0, _cfg.FontSize * 0.5);
 
-        // Colors (hex ARGB).
-        var textColor = (Color)ColorConverter.ConvertFromString(_cfg.TextColor);
-        var outlineColor = (Color)ColorConverter.ConvertFromString(_cfg.OutlineColor);
+        // Colors (hex ARGB). Fall back to white/black on invalid input rather than
+        // throwing — a bad string in config.json must not brick the overlay.
+        var textColor = TryParseColor(_cfg.TextColor, Colors.White);
+        var outlineColor = TryParseColor(_cfg.OutlineColor, Colors.Black);
         var textBrush = new SolidColorBrush(textColor);
         CountText.Foreground = textBrush;
         FpsText.Foreground = textBrush;
@@ -139,5 +140,13 @@ public partial class OverlayWindow : Window
         {
             NativeMethods.MakeInteractive(hwnd);
         }
+    }
+
+    private static Color TryParseColor(string? hex, Color fallback)
+    {
+        if (string.IsNullOrWhiteSpace(hex)) return fallback;
+        try { return (Color)ColorConverter.ConvertFromString(hex); }
+        catch (FormatException) { return fallback; }
+        catch (InvalidOperationException) { return fallback; }
     }
 }

@@ -1,0 +1,44 @@
+<UserControl x:Class="PbOverlay.App.Tabs.ClassifierTuningTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="260"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Column="0" Grid.Row="0" Margin="0,0,8,0">
+            <TextBlock Text="Alive/dead saturation threshold"/>
+            <Slider x:Name="SatSlider" Minimum="0" Maximum="255"
+                    TickFrequency="8" ValueChanged="SatSlider_ValueChanged"/>
+            <TextBlock x:Name="SatValueText"/>
+
+            <TextBlock Text="Empty variance threshold" Margin="0,12,0,0"/>
+            <Slider x:Name="VarSlider" Minimum="0" Maximum="500"
+                    TickFrequency="10" ValueChanged="VarSlider_ValueChanged"/>
+            <TextBlock x:Name="VarValueText"/>
+
+            <TextBlock Text="Temporal smoothing frames" Margin="0,12,0,0"/>
+            <Slider x:Name="SmoothSlider" Minimum="1" Maximum="10"
+                    TickFrequency="1" IsSnapToTickEnabled="True"
+                    ValueChanged="SmoothSlider_ValueChanged"/>
+            <TextBlock x:Name="SmoothValueText"/>
+
+            <Button x:Name="AutoCalibrateButton" Content="Auto-calibrate threshold"
+                    Padding="6,4" Margin="0,16,0,0" Click="AutoCalibrateButton_Click"/>
+        </StackPanel>
+
+        <Image x:Name="PreviewImage" Grid.Column="1" Grid.Row="0" Stretch="Uniform"/>
+
+        <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
+            <TextBlock Text="Team A alive: "/>
+            <TextBlock x:Name="TeamAText" Text="0" FontWeight="Bold"/>
+            <TextBlock Text="   Team B alive: " Margin="16,0,0,0"/>
+            <TextBlock x:Name="TeamBText" Text="0" FontWeight="Bold"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

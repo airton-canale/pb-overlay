@@ -70,6 +70,8 @@ public sealed class DesktopDuplicationSource : IFrameSource
             catch (OperationCanceledException) { }
         }
         _loopTask = null;
+        _loopCts?.Dispose();
+        _loopCts = null;
         DisposeDup();
     }
 

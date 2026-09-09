@@ -164,6 +164,8 @@ public sealed class PresentMonProcessSource : IFrameTimingSource
         _proc?.Dispose();
         _proc = null;
         _readerTask = null;
+        _cts?.Dispose();
+        _cts = null;
     }
 
     public async ValueTask DisposeAsync() => await StopAsync().ConfigureAwait(false);
