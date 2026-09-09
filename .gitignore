@@ -1,0 +1,27 @@
+## .NET
+bin/
+obj/
+out/
+*.user
+*.suo
+.vs/
+
+## Rider / VS Code
+.idea/
+.vscode/
+
+## Build artifacts
+*.pdb
+*.dll.config
+publish/
+
+## Logs / runtime
+*.log
+logs/
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Bundled third-party binaries live under tools/ and ARE checked in.
+!tools/**
