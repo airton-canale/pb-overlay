@@ -99,8 +99,8 @@ public sealed class DesktopDuplicationSource : IFrameSource
 
         _staging = _device.CreateTexture2D(new Texture2DDescription
         {
-            Width = (uint)_outputWidth,
-            Height = (uint)_outputHeight,
+            Width = _outputWidth,
+            Height = _outputHeight,
             MipLevels = 1,
             ArraySize = 1,
             Format = Format.B8G8R8A8_UNorm,
