@@ -9,6 +9,10 @@ using OpenCvSharp;
 using OpenCvSharp.WpfExtensions;
 using PbOverlay.Core.Capture;
 using PbOverlay.Core.Roi;
+// OpenCvSharp defines Point/Rect/Window too; WPF wins here, OpenCV ones stay fully qualified.
+using Point = System.Windows.Point;
+using Rect = System.Windows.Rect;
+using Window = System.Windows.Window;
 
 namespace PbOverlay.App.Tabs;
 
@@ -175,7 +179,7 @@ internal sealed class RoiRectHandle
             Cursor = Cursors.SizeAll,
         };
         _canvas.Children.Add(_rect);
-        SetPixelRect(new Rect(initial.X, initial.Y, initial.Width, initial.Height));
+        SetPixelRect(new OpenCvSharp.Rect((int)initial.X, (int)initial.Y, (int)initial.Width, (int)initial.Height));
 
         _rect.MouseLeftButtonDown += RectDown;
         _rect.MouseMove += RectMove;
