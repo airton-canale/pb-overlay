@@ -103,6 +103,9 @@ public partial class RoiCalibrationTab : UserControl
 
     private void SlotsSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
+        // Slider raises this while the XAML is still being parsed, before the
+        // named fields below it are assigned.
+        if (!IsInitialized) return;
         var v = (int)e.NewValue;
         SlotsValueText.Text = v.ToString();
         if (ProfilesList.SelectedItem is RoiProfile p) p.SlotsPerTeam = v;

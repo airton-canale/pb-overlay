@@ -46,6 +46,8 @@ public partial class ClassifierTuningTab : UserControl
 
     private void SatSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
+        // Sliders raise this during XAML parse, before the named fields exist.
+        if (!IsInitialized) return;
         AppServices.Config.Classifier.AliveDeadSaturationThreshold = e.NewValue;
         SatValueText.Text = ((int)e.NewValue).ToString();
         InvalidatePipeline();
@@ -53,6 +55,7 @@ public partial class ClassifierTuningTab : UserControl
 
     private void VarSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
+        if (!IsInitialized) return;
         AppServices.Config.Classifier.EmptyVarianceThreshold = e.NewValue;
         VarValueText.Text = ((int)e.NewValue).ToString();
         InvalidatePipeline();
@@ -60,6 +63,7 @@ public partial class ClassifierTuningTab : UserControl
 
     private void SmoothSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
+        if (!IsInitialized) return;
         AppServices.Config.Classifier.TemporalSmoothingFrames = (int)e.NewValue;
         SmoothValueText.Text = ((int)e.NewValue).ToString();
         InvalidatePipeline();
