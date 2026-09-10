@@ -165,7 +165,7 @@ internal sealed class RoiRectHandle
     private readonly Thumb _tl, _tr, _bl, _br;
 
     private Point _dragStart;
-    private double _startLeft, _startTop, _startWidth, _startHeight;
+    private double _startLeft, _startTop;
 
     public RoiRectHandle(Canvas canvas, Rect initial, Color color)
     {
