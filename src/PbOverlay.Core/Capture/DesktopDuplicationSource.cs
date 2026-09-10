@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
+using SharpGen.Runtime;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
@@ -88,7 +89,8 @@ public sealed class DesktopDuplicationSource : IFrameSource
 
         using var dxgiDevice = _device!.QueryInterface<IDXGIDevice>();
         using var adapter = dxgiDevice.GetAdapter();
-        using var output = adapter.GetOutput(0);
+        adapter.EnumOutputs(0, out var primaryOutput).CheckError();
+        using var output = primaryOutput;
         using var output1 = output.QueryInterface<IDXGIOutput1>();
 
         _dup = output1.DuplicateOutput(_device);
@@ -97,8 +99,8 @@ public sealed class DesktopDuplicationSource : IFrameSource
 
         _staging = _device.CreateTexture2D(new Texture2DDescription
         {
-            Width = _outputWidth,
-            Height = _outputHeight,
+            Width = (uint)_outputWidth,
+            Height = (uint)_outputHeight,
             MipLevels = 1,
             ArraySize = 1,
             Format = Format.B8G8R8A8_UNorm,
@@ -195,7 +197,8 @@ public sealed class DesktopDuplicationSource : IFrameSource
         rect.Intersect(new System.Drawing.Rectangle(0, 0, _outputWidth, _outputHeight));
         if (rect.Width <= 0 || rect.Height <= 0) return false;
 
-        var box = _context.Map(_staging, 0, MapMode.Read, MapFlags.None);
+        // MapFlags is ambiguous between DXGI and D3D11; the default is MapFlags.None anyway.
+        var box = _context.Map(_staging, 0, MapMode.Read);
         try
         {
             // Copy just the cropped rect out into an OpenCV Mat.
@@ -203,7 +206,7 @@ public sealed class DesktopDuplicationSource : IFrameSource
             var rowBytes = rect.Width * 4;
             for (var y = 0; y < rect.Height; y++)
             {
-                var src = IntPtr.Add(box.DataPointer, (rect.Y + y) * box.RowPitch + rect.X * 4);
+                var src = IntPtr.Add(box.DataPointer, (rect.Y + y) * (int)box.RowPitch + rect.X * 4);
                 var dst = mat.Ptr(y);
                 CopyMemory(dst, src, (uint)rowBytes);
             }
