@@ -3,32 +3,180 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:tabs="clr-namespace:PbOverlay.App.Tabs"
         Title="PbOverlay"
-        Width="1100" Height="720">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        Width="1180" Height="740"
+        MinWidth="960" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI"
+        Foreground="White">
 
-        <StackPanel Orientation="Horizontal" Margin="8">
-            <Button x:Name="ShowHideButton" Content="Show/Hide Overlay" Padding="8,4" Click="ShowHideButton_Click"/>
-            <Button x:Name="SaveConfigButton" Content="Save Config" Padding="8,4" Margin="8,0,0,0" Click="SaveConfigButton_Click"/>
-        </StackPanel>
+    <Window.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#1B0A2C" Offset="0"/>
+            <GradientStop Color="#3A0F70" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Background>
 
-        <TabControl Grid.Row="1" Margin="8,0,8,8">
-            <TabItem Header="Capture Source">
+    <Window.Resources>
+        <SolidColorBrush x:Key="RailBg" Color="#1B0A2C"/>
+        <SolidColorBrush x:Key="RailAccent" Color="#4A1B87"/>
+        <SolidColorBrush x:Key="RailHover" Color="#33125E"/>
+        <SolidColorBrush x:Key="PanelBg" Color="#F5F1FB"/>
+        <SolidColorBrush x:Key="PillBg" Color="#4A1B87"/>
+        <SolidColorBrush x:Key="PillBgHover" Color="#6229BB"/>
+        <SolidColorBrush x:Key="TextMuted" Color="#C9B7E3"/>
+
+        <Style TargetType="Button" x:Key="PillButton">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{StaticResource PillBg}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="18"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource PillBgHover}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TabItem" x:Key="RailTab">
+            <Setter Property="Foreground" Value="{StaticResource TextMuted}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="TabBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="12"
+                                Padding="14,10"
+                                Margin="0,3">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{TemplateBinding Tag}"
+                                           FontFamily="Segoe MDL2 Assets"
+                                           FontSize="20"
+                                           Width="30"
+                                           VerticalAlignment="Center"
+                                           Foreground="{TemplateBinding Foreground}"/>
+                                <ContentPresenter ContentSource="Header"
+                                                  VerticalAlignment="Center"
+                                                  TextBlock.FontWeight="SemiBold"
+                                                  TextBlock.FontSize="13"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{StaticResource RailHover}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{StaticResource RailAccent}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TabControl" x:Key="RailTabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="ItemsPanel">
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="260"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"
+                                    Background="{StaticResource RailBg}"
+                                    CornerRadius="18"
+                                    Padding="16">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Top" Margin="4,4,4,16">
+                                        <TextBlock Text="PB OVERLAY"
+                                                   FontSize="22"
+                                                   FontWeight="Bold"
+                                                   Foreground="White"/>
+                                        <TextBlock Text="Point Blank companion"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource TextMuted}"
+                                                   Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                                        <Button x:Name="PART_ShowHideButton"
+                                                Content="Show / Hide Overlay"
+                                                Style="{StaticResource PillButton}"
+                                                Click="ShowHideButton_Click"
+                                                Margin="0,0,0,8"/>
+                                        <Button x:Name="PART_SaveConfigButton"
+                                                Content="Save Config"
+                                                Style="{StaticResource PillButton}"
+                                                Click="SaveConfigButton_Click"/>
+                                    </StackPanel>
+
+                                    <StackPanel IsItemsHost="True"/>
+                                </DockPanel>
+                            </Border>
+
+                            <Border Grid.Column="1"
+                                    Background="{StaticResource PanelBg}"
+                                    CornerRadius="18"
+                                    Margin="12,0,0,0">
+                                <ContentPresenter ContentSource="SelectedContent"
+                                                  TextElement.Foreground="#1B0A2C"
+                                                  Margin="20"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <TabControl x:Name="MainTabs"
+                    Style="{StaticResource RailTabControl}"
+                    SelectedIndex="0">
+            <TabItem Header="Capture Source"    Tag="&#xE720;" Style="{StaticResource RailTab}">
                 <tabs:CaptureSourceTab/>
             </TabItem>
-            <TabItem Header="ROI Calibration">
+            <TabItem Header="ROI Calibration"   Tag="&#xE799;" Style="{StaticResource RailTab}">
                 <tabs:RoiCalibrationTab/>
             </TabItem>
-            <TabItem Header="Classifier Tuning">
+            <TabItem Header="Classifier Tuning" Tag="&#xE713;" Style="{StaticResource RailTab}">
                 <tabs:ClassifierTuningTab/>
             </TabItem>
-            <TabItem Header="Overlay Appearance">
+            <TabItem Header="Overlay Appearance" Tag="&#xE790;" Style="{StaticResource RailTab}">
                 <tabs:OverlayAppearanceTab/>
             </TabItem>
-            <TabItem Header="Game Config">
+            <TabItem Header="Game Config"       Tag="&#xE7FC;" Style="{StaticResource RailTab}">
                 <tabs:GameConfigTab/>
             </TabItem>
         </TabControl>
