@@ -4,7 +4,7 @@ public sealed class OverlayConfig
 {
     public double PositionX { get; set; } = -1;
     public double PositionY { get; set; } = -1;
-    public double FontSize { get; set; } = 64;
+    public double FontSize { get; set; } = 24;
     public string TextColor { get; set; } = "#FFFFFFFF";
     public string OutlineColor { get; set; } = "#FF000000";
     public double OutlineThickness { get; set; } = 3;

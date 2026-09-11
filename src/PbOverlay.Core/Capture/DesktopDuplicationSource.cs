@@ -146,17 +146,27 @@ public sealed class DesktopDuplicationSource : IFrameSource
                     continue;
                 }
             }
-            catch (SharpGenException ex) when (ex.ResultCode == Vortice.DXGI.ResultCode.AccessLost)
+            catch (SharpGenException ex)
             {
-                _log.LogWarning("DXGI duplication access lost; re-initialising.");
+                // AccessLost fires on mode change / fullscreen transition; any
+                // other DXGI failure (occluded, access denied when the game
+                // takes exclusive fullscreen) also warrants a re-init rather
+                // than tearing the overlay down.
+                _log.LogWarning(ex, "DXGI duplication failed ({Code}); re-initialising.", ex.ResultCode);
                 DisposeDup();
                 try { InitDup(); }
                 catch (Exception initEx)
                 {
                     _log.LogError(initEx, "Failed to re-init DXGI duplication.");
                     TargetLost?.Invoke(this, EventArgs.Empty);
-                    return;
+                    await Task.Delay(500, ct).ConfigureAwait(false);
+                    continue;
                 }
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "Capture loop iteration failed; continuing.");
+                await Task.Delay(200, ct).ConfigureAwait(false);
             }
 
             nextTick += frameInterval;
@@ -178,16 +188,23 @@ public sealed class DesktopDuplicationSource : IFrameSource
             if (result.Code == Vortice.DXGI.ResultCode.WaitTimeout.Code) return false;
             throw new SharpGenException(result);
         }
+        // DXGI_STATUS_OCCLUDED and other non-Failure statuses can hand back a
+        // null resource (e.g. game momentarily hides the desktop); skip cleanly.
+        if (desktopResource is null)
+        {
+            try { _dup.ReleaseFrame(); } catch { /* nothing acquired */ }
+            return false;
+        }
 
         try
         {
-            using var srcTex = desktopResource!.QueryInterface<ID3D11Texture2D>();
+            using var srcTex = desktopResource.QueryInterface<ID3D11Texture2D>();
             _context.CopyResource(_staging, srcTex);
         }
         finally
         {
             _dup.ReleaseFrame();
-            desktopResource?.Dispose();
+            desktopResource.Dispose();
         }
 
         var rect = GetClientRectOnDesktop(hwnd);
@@ -211,7 +228,16 @@ public sealed class DesktopDuplicationSource : IFrameSource
                 CopyMemory(dst, src, (uint)rowBytes);
             }
 
-            FrameArrived?.Invoke(this, new CapturedFrame(mat, rect.Width, rect.Height, Stopwatch.GetTimestamp()));
+            try
+            {
+                FrameArrived?.Invoke(this, new CapturedFrame(mat, rect.Width, rect.Height, Stopwatch.GetTimestamp()));
+            }
+            finally
+            {
+                // Subscribers clone what they need synchronously; safe to
+                // release the source Mat here to avoid native memory piling up.
+                mat.Dispose();
+            }
             return true;
         }
         finally

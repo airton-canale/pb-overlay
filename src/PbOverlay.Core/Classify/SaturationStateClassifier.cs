@@ -25,10 +25,21 @@ public sealed class SaturationStateClassifier : IStateClassifierBatch
     public IReadOnlyList<SlotState> ClassifyAll(Mat frameBgra, IReadOnlyList<Rect> slots)
     {
         _last.Clear();
+        var frameBounds = new Rect(0, 0, frameBgra.Cols, frameBgra.Rows);
         var states = new SlotState[slots.Count];
         for (var i = 0; i < slots.Count; i++)
         {
-            var obs = Observe(frameBgra, slots[i]);
+            // Clamp to frame; OpenCV's Mat(Mat, Rect) throws (native AV risk)
+            // when a slot rect falls outside the frame — happens if calibrated
+            // ROI dims don't match the current capture size.
+            var clamped = slots[i].Intersect(frameBounds);
+            if (clamped.Width <= 0 || clamped.Height <= 0)
+            {
+                _last.Add(new SlotObservation(slots[i], 0.0, 0.0));
+                states[i] = SlotState.Empty;
+                continue;
+            }
+            var obs = Observe(frameBgra, clamped);
             _last.Add(obs);
             states[i] = _emptyDetector.IsEmpty(obs)
                 ? SlotState.Empty
