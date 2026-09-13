@@ -69,7 +69,11 @@ public partial class App : Application
 
         _classifierRunner = new LiveClassifierRunner();
 
-        new MainWindow().Show();
+        // ponytail: temporary layout-review switch, delete once mockup becomes MainWindow
+        if (e.Args.Contains("--mockup"))
+            new MockupWindow().Show();
+        else
+            new MainWindow().Show();
     }
 
     private static void OnDispatcherUnhandled(object sender, DispatcherUnhandledExceptionEventArgs e)
